@@ -1,0 +1,48 @@
+{
+  "experiments": [
+    "Remove only global pair cap at 6m cadence; NAV/K for all models",
+    "Cadence 1,2,3,4,5,6 months; max20 and NAV/20 retained"
+  ],
+  "models": [
+    "Original nonoverlap greedy benchmark",
+    "Score maximum with degree <= 1 and common nonoverlap formation risk ceiling",
+    "Score maximum with degree <= 2 and common nonoverlap formation risk ceiling",
+    "Score maximum with degree <= 3 and common nonoverlap formation risk ceiling",
+    "Score maximum with degree <= 4 and common nonoverlap formation risk ceiling",
+    "Score maximum with degree <= 5 and common nonoverlap formation risk ceiling"
+  ],
+  "common": {
+    "period": "2016-01-04 to 2024-12-31; identical calendar, initial NAV 1000000",
+    "formation_months": 12,
+    "sector_pairs": 4,
+    "full_candidate_pool": true,
+    "original_filters_unchanged": true,
+    "fees": "0 and 5bp ONE WAY per executed leg; no netting, slippage, borrow or cash yield",
+    "trading": "Unmodified upstream engine, fixed shares, next-close fills, all positions closed at each window end",
+    "risk": "Original-engine gross NAV sample variance on prior12m replay blocks matching cadence; exclude reset transitions; full-formation coefficients, in-sample only",
+    "risk_reference": "Each experiment/window has its OWN greedy NONOVERLAP benchmark under the SAME capital and replay rules; shared across b1..5",
+    "final_partial_window": "5m last window Oct-Dec2024 included to preserve common evaluation end",
+    "formation_acceleration": "Reject only pairs already failing unchanged deterministic screens before EG, valid because multiple_testing=none and require_i1=false. Original fitter on every surviving pair; parity against all18 old eligible pools.",
+    "limits": "Exploratory, static sector map, provided NBL merger/security identity issue remains; no price edits"
+  },
+  "b4_b5_equivalent": true,
+  "all_inputs": {
+    "prices": {
+      "sha256": "cdacaf83a4a2b7fb95aab857fb76523e1748868af1c3819589f7758a1f931ac5"
+    },
+    "membership": {
+      "sha256": "39a9202c9ef69a74c0ff07e2113ad41fb6da7c8c5b6cd9541f0185fb4391e717"
+    },
+    "sectors": {
+      "sha256": "880dcf99e434af1b453782eed5494e684703385aad1c3c3d39a522fdbbc55897"
+    }
+  },
+  "upstream_commit": "e95685820b7a279798f81b4f7b2662956de7dae0",
+  "computation": {
+    "calibration": "Vectorized original zero-cost state machine, full254-pair preflight across6 cadences exactly matched; original-engine sample checks every new replay",
+    "execution": "Unmodified original simulate_pair, positive homogeneous money scaling of unit runs; actual-capital parity checked every model/window; greedy baselines direct",
+    "solver": "Full-universe structural MILP, exact NAV integer separation, fractional and exact binary-product refinements; safe LP reduced-cost fixing; valid convex outer risk relaxation proved by triangle inequality, with LP NAV interval tightening; all final selections checked against actual formation NAV variance",
+    "optimality": "1329/1415 certified globally within numerical tolerance;86 feasible incumbents, max (upper-current)/current = 1.0102961226599368%",
+    "reproducibility": "Final selections are frozen and hashed. Replaying frozen selections reproduces performance. A fresh time-limited optimization can return different feasible or tied selections. Code evolved during refinement; preserve original run code hashes and final source hashes separately."
+  }
+}
