@@ -35,9 +35,11 @@ python run_experiment.py \
   --mode replay --arm all
 ```
 
-- `--mode replay`는 확정 선정 및 형성기 추정치를 담은 `frozen_selections.json.gz`를 읽고 원래 거래 엔진으로 재계산한다. 누적수익·연변동성·샤프·최대낙폭·거래 수를 기존 결과와 자동 대조한다.
+- `--mode replay`는 확정 선정 및 형성기 추정치를 담은 `frozen_selections.json.gz`를 읽고 원래 거래 엔진으로 재계산한다. 요청한 실험의 결과가 모두 있는지와 평가 기간·초기 자본을 확인한 뒤, 누적수익·연변동성·샤프·최대낙폭·거래 수를 기존 결과와 자동 대조한다.
 - `--mode solve`는 같은 설정으로 입력 CSV에서 후보, 위험 기준, 페어를 새로 계산한다. 탐색 시간이 제한된 해는 공개 표와 달라질 수 있다. 구간별 선정 JSON에 위험과 최적성 격차가 남는다. `--solver-seconds`는 각 선정의 SCIP 탐색 시간 설정이다.
 - `--arm base`, `--arm uncapped`, `--arm cadence`로 실행 범위를 고를 수 있다. 출력 경로는 새 폴더를 지정한다. `comparison.csv`와 각 모형의 일별 NAV, 거래 및 선정 목록이 생성된다.
+
+설치 후 `python -m unittest test_release -v`로 결과 검증기의 누락·기간 불일치 검사 등을 확인할 수 있다. 이 테스트는 원본 CSV를 이용한 백테스트 재현을 대신하지 않는다.
 
 ## 기존 결과
 

@@ -75,16 +75,25 @@ def install_frozen_selections(cases, reference):
     return sorted(set(windows))
 
 
-def verify_results(results, reference):
+def verify_results(results, reference, cases):
     path = HERE / 'reference_results.csv'
     if sha(path) != reference['reference_results_sha256']:
         raise ValueError('Reference results checksum mismatch')
     keys = ['months', 'uncapped', 'model', 'one_way_bps']
     baseline = pd.read_csv(path).set_index(keys)
     observed = results.set_index(keys)
-    if not observed.index.is_unique or not observed.index.isin(baseline.index).all():
-        raise ValueError('Unexpected result cases')
-    expected = baseline.loc[observed.index]
+    required = pd.MultiIndex.from_tuples(
+        [(months, uncapped, model, bps)
+         for months, uncapped in cases for model in MODELS for bps in (0, 5)],
+        names=keys,
+    )
+    if not observed.index.is_unique or set(observed.index) != set(required):
+        raise ValueError('Missing, duplicate or unexpected result cases')
+    observed = observed.loc[required]
+    expected = baseline.loc[required]
+    for column in ('first_date', 'last_date', 'calendar_observations', 'initial_capital'):
+        if not observed[column].equals(expected[column]):
+            raise ValueError(f'Replay evaluation period or capital mismatch: {column}')
     for metric in ('cumulative_return', 'annualized_volatility', 'sharpe', 'max_drawdown', 'completed_trades'):
         np.testing.assert_allclose(observed[metric], expected[metric], rtol=1e-9, atol=1e-11, err_msg=metric)
     return {'matched_cases': len(observed), 'matches_published_results': True}
@@ -127,7 +136,7 @@ def main():
     results = pd.DataFrame([row for group in groups for row in group])
     results = results.sort_values(['uncapped', 'months', 'model', 'one_way_bps'])
     results.to_csv(args.output / 'comparison.csv', index=False)
-    validation = verify_results(results, reference) if args.mode == 'replay' else {'computed_cases': len(results)}
+    validation = verify_results(results, reference, cases) if args.mode == 'replay' else {'computed_cases': len(results)}
     write(args.output / 'validation.json', {'mode': args.mode, **validation})
     print(json.dumps(validation), flush=True)
 
